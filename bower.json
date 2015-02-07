@@ -1,0 +1,28 @@
+{
+  "name": "dagchat",
+  "version": "0.0.0",
+  "authors": [
+    "Wojtek Snarski <wsnarski@carthage.edu>"
+  ],
+  "description": "dag chat",
+  "main": "app.js",
+  "keywords": [
+    "dag",
+    "chat"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "socket.io-client": "~1.3.2",
+    "jquery": "~2.1.3",
+    "angular": "~1.3.11",
+    "angular-socket-io": "~0.7.0"
+  }
+}
