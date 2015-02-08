@@ -70,6 +70,7 @@ io.on('connection', function(socket){
         text: post.text
       };
       //loop over each edge we want to make.
+      var edgesAdded = 0;
       message.respondsTo.forEach(function(node) {
         db.create('edge', 'RespondsTo')
         .from(post["@rid"])
@@ -82,9 +83,13 @@ io.on('connection', function(socket){
             in: node,
             out: post["@rid"]
           });
+          //TODO, more reason to do this in one statement.
+          edgesAdded++;
+          if(edgesAdded === message.respondsTo.length) {
+            io.emit('chat message', persistedMessage);
+          }
         });
       });
-      io.emit('chat message', persistedMessage);
     });
   });
 });
