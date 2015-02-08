@@ -28,8 +28,7 @@ app.use('/public', express.static(__dirname + '/public'));
 app.use('/bower_components',  express.static(__dirname + '/bower_components'));
 
 io.on('connection', function(socket){
-  //app.locals.db.traverse().from('#12:0').all()
-  console.log('a user connected');
+    console.log('a user connected');
   //hard coded root of the current chat.
   app.locals.db.traverse().from('#12:0').all()
   .then(function(posts){
@@ -58,30 +57,34 @@ io.on('connection', function(socket){
   socket.on('disconnect', function() {
     console.log('user disconnected');
   });
+  //TODO look into doing this as one statement.
   socket.on('chat message', function(message) {
+    var persistedMessage = {
+      postNode: {},
+      responseEdges: []
+    };
     db.insert().into('Post').set({text: message.text}).one()
     .then(function(post){
-      //TODO this is gonna have to account for multiple edges eventually
-      db.create('edge', 'RespondsTo')
-      .from(post["@rid"])
-      .to(message.respondsTo)
-      .one()
-      .then(function(edge) {
-        var messageResponse = {
-          postNode: {},
-          responseEdges: [{
+      persistedMessage.postNode[post["@rid"]] = {
+        "@rid": post["@rid"],
+        text: post.text
+      };
+      //loop over each edge we want to make.
+      message.respondsTo.forEach(function(node) {
+        db.create('edge', 'RespondsTo')
+        .from(post["@rid"])
+        .to(node)
+        .one()
+        .then(function(edge) {
+          persistedMessage.responseEdges.push(
+          {
             "@rid": edge["@rid"],
-            in: message.respondsTo,
+            in: node,
             out: post["@rid"]
-          }]
-        };
-        messageResponse.postNode[post["@rid"]] =
-        {
-          "@rid": post["@rid"],
-          text: post.text
-        };
-        io.emit('chat message', messageResponse);
+          });
+        });
       });
+      io.emit('chat message', persistedMessage);
     });
   });
 });

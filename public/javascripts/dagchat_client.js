@@ -16,7 +16,9 @@ function ($scope, chatSocket) {
   $scope.$on('socket:chat message', function(ev, post){
     var postKey = Object.keys(post.postNode)[0]
     ev.currentScope.chatMessages[postKey] = post.postNode[postKey];
-    ev.currentScope.responseEdges.push(post.responseEdges);
+    post.responseEdges.forEach(function(respondsTo) {
+      ev.currentScope.responseEdges.push(post.respondsTo);
+    });
   });
 
   //TODO how to show branches?
@@ -27,26 +29,36 @@ function ($scope, chatSocket) {
   //.. to keep track of all selected
 
   $scope.selectMessage = function(message) {
-    //TODO should probably have another structure
-    //to make looking if any are selected easier.
     if(this.chatMessages[message["@rid"]].selected)
     {
       delete this.chatMessages[message["@rid"]].selected;
+      delete this.selectedMessages[message["@rid"]];
     }
     else {
       this.chatMessages[message["@rid"]].selected = "selected";
+      this.selectedMessages[message["@rid"]] = true;
     }
   }
+  //TODO replace some of this stuff with underscore functions
 
   //need access to chat socket in post message callback.
   //TODO look into a better way to decouple this
   $scope.chatSocket = chatSocket;
   $scope.postMessage = function(message) {
+    var respondsTo = [];
+    if(Object.keys(this.selectedMessages).length === 0) {
+      respondsTo.push(Object.keys(this.chatMessages)
+                     [Object.keys(this.chatMessages).length - 1])
+    } else {
+      Object.keys(this.selectedMessages).forEach(function(selectedMessage) {
+        respondsTo.push(selectedMessage);
+      });
+    }
+
     var messageToPost = {
       text: this.currentMessage,
-      respondsTo:
-      Object.keys(this.chatMessages)
-      [Object.keys(this.chatMessages).length - 1]
+      respondsTo: respondsTo
+
 
     };
     this.chatSocket.emit('chat message', messageToPost);
