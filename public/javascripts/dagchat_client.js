@@ -9,6 +9,7 @@ function ($scope, chatSocket) {
   chatSocket.forward('log on event', $scope);
   chatSocket.forward('chat message', $scope);
   $scope.selectedMessages = {};
+  $scope.chatMessages = {};
   $scope.$on('socket:log on event', function(ev, chat){
     ev.currentScope.chatMessages = chat.postNodes;
     ev.currentScope.responseEdges = chat.responseEdges;
@@ -38,6 +39,14 @@ function ($scope, chatSocket) {
       this.chatMessages[message["@rid"]].selected = "selected";
       this.selectedMessages[message["@rid"]] = true;
     }
+  };
+
+  $scope.clearSelected = function() {
+    var loc_scope = this;
+    Object.keys(this.selectedMessages).forEach(function(selectedMessage) {
+      delete loc_scope.chatMessages[selectedMessage].selected;
+    });
+    this.selectedMessages = {};
   }
   //TODO replace some of this stuff with underscore functions
 
@@ -63,5 +72,6 @@ function ($scope, chatSocket) {
     };
     this.chatSocket.emit('chat message', messageToPost);
     this.currentMessage = '';
+    this.clearSelected();
   }
 }]);
