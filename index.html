@@ -2,7 +2,7 @@
 <html ng-app="dagchat">
 <head>
   <title>Socket.IO chat</title>
-  <link rel='sylesheet' type='text/css' href='public/stylesheets/style.css'>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/style.css">
   <!-- bower:css -->
   <!-- endbower -->
 </head>
@@ -10,8 +10,10 @@
   <ul id="messages">
     <li ng-class="message.selected" ng-repeat="message in chatMessages" ng-click="selectMessage(message)">{{message.text}}</li>
   </ul>
-  <input id="m" autocomplete="off" ng-model="currentMessage"/>
-  <button ng-click="postMessage(currentMessage)">Send</button>
+  <div id='input-holder'>
+    <input id="m" autocomplete="off" ng-model="currentMessage"/>
+    <button ng-click="postMessage(currentMessage)">Send</button>
+  </div>
   <!-- bower:js -->
   <script src='bower_components/jquery/dist/jquery.js'></script>
   <script src='bower_components/angular/angular.js'></script>
