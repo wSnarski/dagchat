@@ -1,8 +1,5 @@
-var expect = require('chai').expect;
-
-describe('Testing sample', function() {
+describe('Chat controller test', function() {
   it('should run succesfully', function() {
-    expect(1+1).to.equal(2);
+    expect(1+1).toEqual(2);
   });
 });
-
