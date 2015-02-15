@@ -5,7 +5,7 @@ factory('chatSocket', function (socketFactory) {
   return socketFactory();
 }).
 controller('chatController', ['$scope', 'chatSocket',
-function ($scope, chatSocket) {
+function chatController ($scope, chatSocket) {
   chatSocket.forward('log on event', $scope);
   chatSocket.forward('chat message', $scope);
   $scope.selectedMessages = {};
