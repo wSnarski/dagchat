@@ -8,7 +8,7 @@
 </head>
 <body ng-controller="chatController">
   <ul id="messages">
-    <li ng-class="message.selected" ng-repeat="message in chatMessages" ng-click="selectMessage(message)">{{message.text}}</li>
+    <li ng-class="message.selected" ng-repeat="message in selectedMessages" ng-click="selectMessage(message)">{{message.text}}</li>
   </ul>
   <div id='input-holder'>
     <input id="m" autocomplete="off" ng-model="currentMessage"/>

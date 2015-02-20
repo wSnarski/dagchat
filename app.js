@@ -51,7 +51,17 @@ io.on('connection', function(socket){
         chat.responseEdges.push(responseEdge);
       }
     });
-
+    //order because i need it on the front end.
+    chat.responseEdges.sort(function(a,b){
+      //TODO find out if this can be done cleaner
+      var idA = a["@rid"].position;
+      var idB = b["@rid"].position;
+      if(idA < idB)
+        return -1;
+      else if(idA > idB)
+        return 1;
+      else return 0;
+    });
     socket.emit('log on event', chat);
   });
   socket.on('disconnect', function() {
