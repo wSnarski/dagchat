@@ -52,8 +52,23 @@ factory('dagPathBuilder', function() {
     return uniquePaths;
   };
 }).
-controller('chatController', ['$scope', 'chatSocket', 'dagPathBuilder',
-function chatController ($scope, chatSocket, dagPathBuilder) {
+controller('chatController',
+['$scope', 'chatSocket', 'dagPathBuilder', 'hotkeys',
+function chatController ($scope, chatSocket, dagPathBuilder, hotkeys) {
+  hotkeys.add({
+    combo:'shift+right',
+    description: 'Go to the next story',
+    callback: function() {
+      $scope.goToNextStory();
+    }
+  });
+  hotkeys.add({
+    combo:'shift+left',
+    description: 'Go to the previous story',
+    callback: function() {
+      $scope.goToPreviousStory();
+    }
+  });
   chatSocket.forward('log on event', $scope);
   chatSocket.forward('chat message', $scope);
   $scope.selectedMessages = {};
@@ -62,7 +77,9 @@ function chatController ($scope, chatSocket, dagPathBuilder) {
   $scope.selectedPath = [];
   //TODO this is not gonna work, need to find a better
   //     way to keep track and cycle between paths.
-  $scope.selectedPathNumber = 0;
+  //a combination of two [0][0] will get us the selected unique path
+  $scope.selectedCompositePathKey = 0;
+  $scope.selectedUniquePathKey = 0;
   //TODO this probably shouldnt be an object
   $scope.selectedMessages = [];
 
@@ -71,13 +88,8 @@ function chatController ($scope, chatSocket, dagPathBuilder) {
     ev.currentScope.responseEdges = chat.responseEdges;
     //TODO make this cleaner
     $scope.uniquePaths = dagPathBuilder(chat.responseEdges);
-    $scope.selectedPath =
-      $scope.uniquePaths[Object.keys($scope.uniquePaths)
-      [$scope.selectedPathNumber]][0]; //TODO this is not gonna work
-    for(var i = 0; i < $scope.selectedPath.length; i++) {
-      $scope.selectedMessages.push(
-        $scope.chatMessages[$scope.selectedPath[i]]);
-    }
+    $scope.showSelectedStory();
+
   });
   $scope.$on('socket:chat message', function(ev, post){
     var postKey = Object.keys(post.postNode)[0]
@@ -132,4 +144,54 @@ function chatController ($scope, chatSocket, dagPathBuilder) {
     this.currentMessage = '';
     this.clearSelected();
   }
+
+  $scope.showSelectedStory = function() {
+    $scope.selectedPath =
+      $scope.uniquePaths[Object.keys($scope.uniquePaths)
+      [$scope.selectedCompositePathKey]]
+      [$scope.selectedUniquePathKey];
+
+    $scope.selectedMessages = [];
+    for(var i = 0; i < $scope.selectedPath.length; i++) {
+      $scope.selectedMessages.push(
+        $scope.chatMessages[$scope.selectedPath[i]]);
+      }
+  };
+
+  $scope.goToPreviousStory = function() {
+    if($scope.selectedUniquePathKey > 0) {
+        $scope.selectedUniquePathKey --;
+      }
+      else if ($scope.selectedCompositePathKey > 0)
+      {
+        $scope.selectedCompositePathKey --;
+      }
+      else {
+        var keys = Object.keys($scope.uniquePaths);
+        $scope.selectedCompositePathKey = keys.length - 1;
+        $scope.selectedUniquePathKey =
+          $scope.uniquePaths[keys[keys.length-1]].length - 1;
+      }
+
+      $scope.showSelectedStory();
+  };
+
+  $scope.goToNextStory = function() {
+    if($scope.selectedUniquePathKey <
+      $scope.uniquePaths[Object.keys($scope.uniquePaths)
+      [$scope.selectedCompositePathKey]].length - 1) {
+       $scope.selectedUniquePathKey ++;
+     }
+     else if ($scope.selectedCompositePathKey <
+              Object.keys($scope.uniquePaths).length -1 )
+     {
+       $scope.selectedCompositePathKey ++;
+     }
+     else {
+       $scope.selectedUniquePathKey = 0;
+       $scope.selectedCompositePathKey = 0;
+     }
+
+     $scope.showSelectedStory();
+  };
 }]);
