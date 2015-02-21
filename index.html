@@ -9,9 +9,26 @@
   <!-- endbower -->
 </head>
 <body ng-controller="chatController">
-  <ul id="messages">
-    <li ng-class="message.selected" ng-repeat="message in selectedMessages" ng-click="selectMessage(message)">{{message.text}}</li>
-  </ul>
+  <div class='container'>
+    <div class='col-md-2'>
+      <nav class="col-xs-3 bs-docs-sidebar">
+        <ul id="sidebar" class="nav nav-stacked fixed">
+          <li ng-class="path.active" ng-repeat="path in uniquePaths">
+            <a href="#" ng-click="changeCompositePath($index)">{{$index}}</a>
+            <ul class = "nav nav-stacked">
+              <li ng-class="unique.active" ng-repeat= "unique in path">
+                <a href="#" ng-click="changeUniquePath($index)">{{$index}}</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class='col-md-10'>
+      <ul id="messages">
+        <li ng-class="message.selected" ng-repeat="message in selectedMessages" ng-click="selectMessage(message)">{{message.text}}</li>
+      </ul>
+    </div>
+  </div>
   <div id='input-holder'>
     <input id="m" autocomplete="off" ng-model="currentMessage"/>
     <button ng-click="postMessage(currentMessage)">Send</button>
