@@ -1,5 +1,6 @@
 angular.module('dagchat', [
-'btford.socket-io'
+'btford.socket-io',
+'cfp.hotkeys'
 ]).
 factory('chatSocket', function (socketFactory) {
   return socketFactory();
