@@ -92,6 +92,7 @@ function chatController ($scope, chatSocket, dagPathBuilder, hotkeys) {
 
   });
   $scope.$on('socket:chat message', function(ev, post){
+    //TODO this has to rebuild our unique paths..etc.
     var postKey = Object.keys(post.postNode)[0]
     ev.currentScope.chatMessages[postKey] = post.postNode[postKey];
     post.responseEdges.forEach(function(respondsTo) {
