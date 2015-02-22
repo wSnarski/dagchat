@@ -6,7 +6,7 @@ var io = require('socket.io')(http);
 var Oriento = require("oriento");
 
 var server = Oriento({
-  host: 'localhost',
+  host: '172.31.99.91',
   port: 2424,
   username: 'root',
   password: 'pw'
