@@ -4,6 +4,9 @@ dagchat.factory('dagPathBuilder', function() {
   //TODO expand this to allow for instantiating,
   //                              adding new ordered edges ..etc.
   return function(orderedEdges) {
+    //TODO make this more of an interface..
+    var pathBuilder = {};
+    var uniquePaths = {};
     //set up for iterating
     pathBuilder[orderedEdges[0].in] = [[orderedEdges[0].in]];
     pathBuilder[orderedEdges[0].in][0].final = true;

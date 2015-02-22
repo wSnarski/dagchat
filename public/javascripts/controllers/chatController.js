@@ -17,16 +17,13 @@ function chatController ($scope, chatSocket, dagPathBuilder, hotkeys) {
   });
   chatSocket.forward('log on event', $scope);
   chatSocket.forward('chat message', $scope);
-  $scope.selectedMessages = {};
+  $scope.flaggedMessages = {};
   $scope.chatMessages = {};
   $scope.uniquePaths = {};
   $scope.selectedPath = [];
-  //TODO this is not gonna work, need to find a better
-  //     way to keep track and cycle between paths.
   //a combination of two [0][0] will get us the selected unique path
   $scope.selectedCompositePathKey = 0;
   $scope.selectedUniquePathKey = 0;
-  //TODO this probably shouldnt be an object
   $scope.selectedMessages = [];
 
   $scope.$on('socket:log on event', function(ev, chat){
@@ -42,28 +39,31 @@ function chatController ($scope, chatSocket, dagPathBuilder, hotkeys) {
     var postKey = Object.keys(post.postNode)[0]
     ev.currentScope.chatMessages[postKey] = post.postNode[postKey];
     post.responseEdges.forEach(function(respondsTo) {
-      ev.currentScope.responseEdges.push(post.respondsTo);
+      ev.currentScope.responseEdges.push(respondsTo);
     });
+    //TODO this is crude, figure out the minimum that has to be done.
+    $scope.uniquePaths = dagPathBuilder(ev.currentScope.responseEdges);
+    $scope.showSelectedStory();
   });
 
   $scope.selectMessage = function(message) {
     if(this.chatMessages[message["@rid"]].selected)
     {
       delete this.chatMessages[message["@rid"]].selected;
-      delete this.selectedMessages[message["@rid"]];
+      delete this.flaggedMessages[message["@rid"]];
     }
     else {
       this.chatMessages[message["@rid"]].selected = "selected";
-      this.selectedMessages[message["@rid"]] = true;
+      this.flaggedMessages[message["@rid"]] = true;
     }
   };
 
   $scope.clearSelected = function() {
     var loc_scope = this;
-    Object.keys(this.selectedMessages).forEach(function(selectedMessage) {
-      delete loc_scope.chatMessages[selectedMessage].selected;
+    Object.keys(this.flaggedMessages).forEach(function(flaggedMessage) {
+      delete loc_scope.chatMessages[flaggedMessage].selected;
     });
-    this.selectedMessages = {};
+    this.flaggedMessages = {};
   }
   //TODO replace some of this stuff with underscore functions
 
@@ -72,20 +72,17 @@ function chatController ($scope, chatSocket, dagPathBuilder, hotkeys) {
   $scope.chatSocket = chatSocket;
   $scope.postMessage = function(message) {
     var respondsTo = [];
-    if(Object.keys(this.selectedMessages).length === 0) {
-      respondsTo.push(Object.keys(this.chatMessages)
-      [Object.keys(this.chatMessages).length - 1])
+    if(Object.keys(this.flaggedMessages).length === 0) {
+      //TODO make responds to the last in the current path
+      respondsTo.push($scope.selectedPath[$scope.selectedPath.length - 1]);
     } else {
-      Object.keys(this.selectedMessages).forEach(function(selectedMessage) {
-        respondsTo.push(selectedMessage);
+      Object.keys(this.flaggedMessages).forEach(function(flaggedMessage) {
+        respondsTo.push(flaggedMessage);
       });
     }
-
     var messageToPost = {
       text: this.currentMessage,
       respondsTo: respondsTo
-
-
     };
     this.chatSocket.emit('chat message', messageToPost);
     this.currentMessage = '';

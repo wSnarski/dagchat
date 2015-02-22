@@ -13,15 +13,15 @@ describe('Chat controller test', function() {
     it('should receive messages', function() {
       var testChat = $controller('chatController',
     {$scope: scope, chatSocket: fakeSocket});
-    
+
     });
     it('should select and deselect messages', function() {
       var testChat = $controller('chatController',
       {$scope: scope, chatSocket: fakeSocket});
       scope.chatMessages = {'#12:1' : {'@rid': '#12:1', selected:false}};
       scope.selectMessage(scope.chatMessages['#12:1']);
-      expect(Object.keys(scope.selectedMessages).length).toEqual(1);
+      expect(Object.keys(scope.flaggedMessages).length).toEqual(1);
       scope.clearSelected();
-      expect(Object.keys(scope.selectedMessages).length).toEqual(0);
+      expect(Object.keys(scope.flaggedMessages).length).toEqual(0);
     });
 });
