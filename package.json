@@ -17,7 +17,8 @@
     "grun": "~0.2.0",
     "grunt": "~0.4.5",
     "orientdb": "*",
-    "oriento": "~1.0.0"
+    "oriento": "~1.0.0",
+    "MD5": "~1.2.1"
   },
   "devDependencies": {
     "grunt-contrib-watch": "~0.6.1",

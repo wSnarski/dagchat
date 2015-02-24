@@ -2,6 +2,7 @@ var express = require('express');
 
 var app = express();
 var http = require('http').Server(app);
+var md5 = require('MD5');
 var io = require('socket.io')(http);
 var Oriento = require("oriento");
 
@@ -63,6 +64,9 @@ io.on('connection', function(socket){
       else return 0;
     });
     socket.emit('log on event', chat);
+  });
+  socket.on('login', function(user){
+    console.log(md5(user.trim().toLowerCase()));
   });
   socket.on('disconnect', function() {
     console.log('user disconnected');

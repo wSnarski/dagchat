@@ -34,17 +34,20 @@
     <button ng-click="postMessage(currentMessage)">Send</button>
   </div>
   <!-- bower:js -->
-  <script src='bower_components/jquery/dist/jquery.js'></script>
+  <!--<script src='bower_components/jquery/dist/jquery.js'></script>-->
   <script src='bower_components/angular/angular.js'></script>
   <script src='bower_components/angular-socket-io/socket.js'></script>
   <script src='bower_components/angular-mocks/angular-mocks.js'></script>
   <script src='bower_components/angular-hotkeys/build/hotkeys.min.js'></script>
-  <script src='bower_components/bootstrap/dist/js/bootstrap.js'></script>
+  <!--TODO figure out how to not have bootstrap js and jquery show up -->
+  <script src='bower_components/angular-bootstrap/ui-bootstrap-tpls.js'></script>
   <!-- endbower -->
   <!-- the following bower packages are not set up correctly -->
   <script src='bower_components/socket.io-client/socket.io.js'></script>
   <script src='public/javascripts/dagchat_client.js'></script>
   <script src='public/javascripts/services/dagPathBuilder.js'></script>
+  <script src='public/javascripts/services/userService.js'></script>
   <script src='public/javascripts/controllers/chatController.js'></script>
+  <script src='public/javascripts/controllers/userController.js'></script>
 </body>
 </html>
