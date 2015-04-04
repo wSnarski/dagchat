@@ -19,6 +19,7 @@ module.exports = function(config) {
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/angular-socket-io/socket.js',
       'bower_components/angular-hotkeys/build/hotkeys.min.js',
+      'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'public/javascripts/*.js',
       'public/javascripts/services/*.js',
       'public/javascripts/controllers/*.js',
