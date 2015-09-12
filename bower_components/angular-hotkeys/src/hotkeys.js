@@ -11,13 +11,19 @@
 
   'use strict';
 
-  angular.module('cfp.hotkeys', []).provider('hotkeys', function() {
+  angular.module('cfp.hotkeys', []).provider('hotkeys', function($injector) {
 
     /**
      * Configurable setting to disable the cheatsheet entirely
      * @type {Boolean}
      */
     this.includeCheatSheet = true;
+
+    /**
+     * Configurable setting to disable ngRoute hooks
+     * @type {Boolean}
+     */
+    this.useNgRoute = $injector.has('ngViewDirective');
 
     /**
      * Configurable setting for the cheat sheet title
@@ -27,11 +33,20 @@
     this.templateTitle = 'Keyboard Shortcuts:';
 
     /**
+     * Configurable settings for the cheat sheet header and footer.  Both are HTML, and the header
+     * overrides the normal title if specified.
+     * @type {String}
+     */
+    this.templateHeader = null;
+    this.templateFooter = null;
+
+    /**
      * Cheat sheet template in the event you want to totally customize it.
      * @type {String}
      */
     this.template = '<div class="cfp-hotkeys-container fade" ng-class="{in: helpVisible}" style="display: none;"><div class="cfp-hotkeys">' +
-                      '<h4 class="cfp-hotkeys-title">{{ title }}</h4>' +
+                      '<h4 class="cfp-hotkeys-title" ng-if="!header">{{ title }}</h4>' +
+                      '<div ng-bind-html="header" ng-if="header"></div>' +
                       '<table><tbody>' +
                         '<tr ng-repeat="hotkey in hotkeys | filter:{ description: \'!$$undefined$$\' }">' +
                           '<td class="cfp-hotkeys-keys">' +
@@ -40,6 +55,7 @@
                           '<td class="cfp-hotkeys-text">{{ hotkey.description }}</td>' +
                         '</tr>' +
                       '</tbody></table>' +
+                      '<div ng-bind-html="footer" ng-if="footer"></div>' +
                       '<div class="cfp-hotkeys-close" ng-click="toggleCheatSheet()">×</div>' +
                     '</div></div>';
 
@@ -60,7 +76,7 @@
       // monkeypatch Mousetrap's stopCallback() function
       // this version doesn't return true when the element is an INPUT, SELECT, or TEXTAREA
       // (instead we will perform this check per-key in the _add() method)
-      Mousetrap.stopCallback = function(event, element) {
+      Mousetrap.prototype.stopCallback = function(event, element) {
         // if the element has the class "mousetrap" then no need to stop
         if ((' ' + element.className + ' ').indexOf(' mousetrap ') > -1) {
           return false;
@@ -124,6 +140,7 @@
         this.action = action;
         this.allowIn = allowIn;
         this.persistent = persistent;
+        this._formated = null;
       }
 
       /**
@@ -132,20 +149,21 @@
        * @return {[Array]} An array of the key combination sequence
        *   for example: "command+g c i" becomes ["⌘ + g", "c", "i"]
        *
-       * TODO: this gets called a lot.  We should cache the result
        */
       Hotkey.prototype.format = function() {
+        if(this._formated === null) {
+          // Don't show all the possible key combos, just the first one.  Not sure
+          // of usecase here, so open a ticket if my assumptions are wrong
+          var combo = this.combo[0];
 
-        // Don't show all the possible key combos, just the first one.  Not sure
-        // of usecase here, so open a ticket if my assumptions are wrong
-        var combo = this.combo[0];
-
-        var sequence = combo.split(/[\s]/);
-        for (var i = 0; i < sequence.length; i++) {
-          sequence[i] = symbolize(sequence[i]);
+          var sequence = combo.split(/[\s]/);
+          for (var i = 0; i < sequence.length; i++) {
+            sequence[i] = symbolize(sequence[i]);
+          }
+          this._formated = sequence;
         }
 
-        return sequence;
+        return this._formated;
       };
 
       /**
@@ -173,6 +191,18 @@
       scope.title = this.templateTitle;
 
       /**
+       * Holds the header HTML for the help menu
+       * @type {String}
+       */
+      scope.header = this.templateHeader;
+
+      /**
+       * Holds the footer HTML for the help menu
+       * @type {String}
+       */
+      scope.footer = this.templateFooter;
+
+      /**
        * Expose toggleCheatSheet to hotkeys scope so we can call it using
        * ng-click from the template
        * @type {function}
@@ -189,27 +219,29 @@
        */
       var boundScopes = [];
 
+      if (this.useNgRoute) {
+        $rootScope.$on('$routeChangeSuccess', function (event, route) {
+          purgeHotkeys();
 
-      $rootScope.$on('$routeChangeSuccess', function (event, route) {
-        purgeHotkeys();
+          if (route && route.hotkeys) {
+            angular.forEach(route.hotkeys, function (hotkey) {
+              // a string was given, which implies this is a function that is to be
+              // $eval()'d within that controller's scope
+              // TODO: hotkey here is super confusing.  sometimes a function (that gets turned into an array), sometimes a string
+              var callback = hotkey[2];
+              if (typeof(callback) === 'string' || callback instanceof String) {
+                hotkey[2] = [callback, route];
+              }
 
-        if (route && route.hotkeys) {
-          angular.forEach(route.hotkeys, function (hotkey) {
-            // a string was given, which implies this is a function that is to be
-            // $eval()'d within that controller's scope
-            // TODO: hotkey here is super confusing.  sometimes a function (that gets turned into an array), sometimes a string
-            var callback = hotkey[2];
-            if (typeof(callback) === 'string' || callback instanceof String) {
-              hotkey[2] = [callback, route];
-            }
+              // todo: perform check to make sure not already defined:
+              // this came from a route, so it's likely not meant to be persistent
+              hotkey[5] = false;
+              _add.apply(this, hotkey);
+            });
+          }
+        });
+      }
 
-            // todo: perform check to make sure not already defined:
-            // this came from a route, so it's likely not meant to be persistent
-            hotkey[5] = false;
-            _add.apply(this, hotkey);
-          });
-        }
-      });
 
 
       // Auto-create a help menu:
@@ -262,7 +294,7 @@
           // Here's an odd way to do this: we're going to use the original
           // description of the hotkey on the cheat sheet so that it shows up.
           // without it, no entry for esc will ever show up (#22)
-          _add('esc', previousEsc.description, toggleCheatSheet);
+          _add('esc', previousEsc.description, toggleCheatSheet, null, ['INPUT', 'SELECT', 'TEXTAREA']);
         } else {
           _del('esc');
 
@@ -318,7 +350,6 @@
         if (persistent === undefined) {
           persistent = true;
         }
-
         // if callback is defined, then wrap it in a function
         // that checks if the event originated from a form element.
         // the function blocks the callback from executing unless the element is specified
@@ -418,10 +449,14 @@
       /**
        * Get a Hotkey object by key binding
        *
-       * @param  {[string]} combo  the key the Hotkey is bound to
+       * @param  {[string]} [combo]  the key the Hotkey is bound to. Returns all key bindings if no key is passed
        * @return {Hotkey}          The Hotkey object
        */
       function _get (combo) {
+
+        if (!combo) {
+          return scope.hotkeys;
+        }
 
         var hotkey;
 
@@ -452,8 +487,7 @@
           scope.$on('$destroy', function () {
             var i = boundScopes[scope.$id].length;
             while (i--) {
-              _del(boundScopes[scope.$id][i]);
-              delete boundScopes[scope.$id][i];
+              _del(boundScopes[scope.$id].pop());
             }
           });
         }
@@ -517,6 +551,7 @@
         includeCheatSheet     : this.includeCheatSheet,
         cheatSheetHotkey      : this.cheatSheetHotkey,
         cheatSheetDescription : this.cheatSheetDescription,
+        useNgRoute            : this.useNgRoute,
         purgeHotkeys          : purgeHotkeys,
         templateTitle         : this.templateTitle
       };
@@ -524,6 +559,8 @@
       return publicApi;
 
     };
+
+
   })
 
   .directive('hotkey', function (hotkeys) {

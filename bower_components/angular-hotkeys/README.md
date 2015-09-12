@@ -1,4 +1,4 @@
-angular-hotkeys 
+angular-hotkeys
 ================
 Configuration-centric keyboard shortcuts for your Angular apps.
 
@@ -35,8 +35,8 @@ Other projects out there rely too heavily on HTML markup for keyboard shortcuts.
 
 ```html
 <div class="player">
-  <div class="playPause-btn" shortcut="{space: playPause}"></div>
-  <div class="mute-btn" shortcut="{'ctrl+down': mute}"></div>
+  <div class="playPause-btn" hotkey="{space: playPause}"></div>
+  <div class="mute-btn" hotkey="{'ctrl+down': mute}"></div>
 </div>
 ```
 
@@ -45,7 +45,7 @@ While this is a great approach for many Angular apps, some applications do not h
 Additionally, this only allows you to pass a function reference, you can't pass arguments to the function you intend to call. So instead of simply calling `seek(currentTime + 30)` and `seek(currentTime + 60)`,  I needed to create a ton of helper functions on the scope (such as `forward30` and `forward60`), and litter my HTML like this:
 
 ```html
-<div class="player" shortcut="{space: playPause,
+<div class="player" hotkey="{space: playPause,
                               'alt+right': forward30,
                               'ctrl+right': forward60,
                               'left': back30,
@@ -151,12 +151,36 @@ angular.module('myApp', ['cfp.hotkeys'])
   })
 ```
 
+**Disable ngRoute integration:**
+
+To prevent listening for $routeChangeSuccess events use `hotkeysProvider`.
+This option defaults to false if ngRoute module is not loaded:
+
+```js
+angular.module('myApp', ['cfp.hotkeys'])
+  .config(function(hotkeysProvider) {
+    hotkeysProvider.useNgRoute = false;
+  })
+```
+
 **Cheatsheet template:**
 
 ```js
 angular.module('myApp', ['cfp.hotkeys'])
   .config(function(hotkeysProvider) {
     hotkeysProvider.template = '<div class="my-own-cheatsheet">...</div>';
+  })
+```
+
+**Header and footer:**
+
+You can specify a custom header and footer for the cheatsheet.  Both are HTML, and if the header is set it will override the normal title.
+
+```js
+angular.module('myApp', ['cfp.hotkeys'])
+  .config(function(hotkeysProvider) {
+    hotkeysProvider.templateHeader = '<div class="my-own-header">...</div>';
+    hotkeysProvider.templateFooter = '<div class="my-own-footer">...</div>';
   })
 ```
 

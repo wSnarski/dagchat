@@ -1,6 +1,6 @@
 {
   "name": "angular-hotkeys",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "main": [
     "build/hotkeys.min.js",
     "build/hotkeys.min.css"
@@ -13,7 +13,8 @@
     "example"
   ],
   "devDependencies": {
-    "mousetrap": "~1.4.6",
-    "angular-mocks": "~1.2.15"
+    "mousetrap": "~1.5.2",
+    "angular-mocks": "~1.2.15",
+    "angular-route": "~1.2.15"
   }
 }
